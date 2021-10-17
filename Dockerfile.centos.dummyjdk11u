@@ -1,0 +1,19 @@
+FROM aashipov/docker:centosdummy AS base
+ARG JDK_BUILD_DATE=20211015
+ARG JDK_TAR_GZ=jdk11u-${JDK_BUILD_DATE}.tar.gz
+ARG JDK_TAR_GZ_IN_TMP=/tmp/${JDK_TAR_GZ}
+ENV JAVA_HOME=/opt/jdk
+RUN mkdir -p ${JAVA_HOME}
+
+FROM base AS downloader
+ARG JDK_BUILD_DATE=20211015
+ARG JDK_TAR_GZ=jdk11u-${JDK_BUILD_DATE}.tar.gz
+ARG JDK_TAR_GZ_IN_TMP=/tmp/${JDK_TAR_GZ}
+ENV JAVA_HOME=/opt/jdk
+ADD https://github.com/aashipov/openjdk-build/releases/download/${JDK_BUILD_DATE}/${JDK_TAR_GZ} /tmp/
+RUN tar -xzf ${JDK_TAR_GZ_IN_TMP} -C ${JAVA_HOME}/ --strip-components=1
+
+FROM base
+ENV JAVA_HOME=/opt/jdk
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+COPY --from=downloader ${JAVA_HOME}/ ${JAVA_HOME}/

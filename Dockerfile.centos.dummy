@@ -1,0 +1,4 @@
+FROM centos:7 AS base
+ARG DUMMY_USER=dummy
+RUN groupadd ${DUMMY_USER} && useradd -d /${DUMMY_USER}/ -m -g ${DUMMY_USER} ${DUMMY_USER} && \
+yum install -y epel-release && yum update -y && yum clean all
