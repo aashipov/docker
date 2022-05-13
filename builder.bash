@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Build image
+# Image builder
 
 function usage {
     echo "usage: $(basename $0) distro flavor"
     echo "  distro - centos"
-    echo "  flavor - dummy jdk11u"
+    echo "  flavor - dummy"
     exit 1
 }
 

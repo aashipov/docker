@@ -1,6 +1,6 @@
 FROM aashipov/docker:centosdummyjava AS downloader
 ARG JDK_TAG=jdk-11.0.15+10
-ARG JDK_TAR_GZ=jdk11u-linux-x86_64-${JDK_TAG}.tar.gz
+ARG JDK_TAR_GZ=jre11u-linux-x86_64-${JDK_TAG}.tar.gz
 ARG JDK_TAR_GZ_IN_TMP=/tmp/${JDK_TAR_GZ}
 ADD https://github.com/aashipov/openjdk-build/releases/download/11/${JDK_TAR_GZ} /tmp/
 RUN tar -xzf ${JDK_TAR_GZ_IN_TMP} -C ${JAVA_HOME}/ --strip-components=1 && \

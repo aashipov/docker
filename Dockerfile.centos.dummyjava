@@ -1,0 +1,4 @@
+FROM aashipov/docker:centosdummy AS base
+ENV JAVA_HOME=/opt/java
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+RUN mkdir -p ${JAVA_HOME}
