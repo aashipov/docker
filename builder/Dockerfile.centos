@@ -1,0 +1,20 @@
+FROM centos:7 AS dummy
+ARG DUMMY_USER=dummy
+ARG UID_GID=10001
+ARG DOCKER_VERSION=20.10.9
+RUN yum upgrade -y && \
+yum install -y git yum-utils && \
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
+yum install -y docker-ce-${DOCKER_VERSION} docker-ce-cli-${DOCKER_VERSION} docker-ce-rootless-extras-${DOCKER_VERSION} containerd.io && \
+yum clean all && \
+groupadd -g ${UID_GID} ${DUMMY_USER} && useradd -m -u ${UID_GID} -d /${DUMMY_USER}/ -g ${DUMMY_USER} ${DUMMY_USER} && \
+usermod -aG docker ${DUMMY_USER}
+
+FROM dummy AS tool-setup
+ADD tool-setup.bash /tmp/
+ADD tools.dsv /tmp/
+RUN /tmp/tool-setup.bash
+
+FROM dummy
+COPY --from=tool-setup /opt/ /opt/
+COPY --from=tool-setup /usr/bin/docker-compose /usr/bin/docker-compose

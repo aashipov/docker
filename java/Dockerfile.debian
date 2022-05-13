@@ -1,0 +1,24 @@
+FROM debian:9 AS dummy
+ARG DUMMY_USER=dummy
+ARG UID_GID=10001
+RUN apt-get update && apt-get -y upgrade && apt -y autoremove && apt -y clean && \
+groupadd -g ${UID_GID} ${DUMMY_USER} && useradd -m -u ${UID_GID} -d /${DUMMY_USER}/ -g ${DUMMY_USER} ${DUMMY_USER}
+
+FROM dummy AS java
+ENV JAVA_HOME=/opt/java
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+RUN mkdir -p ${JAVA_HOME}
+
+FROM java AS downloader
+ARG JDK_TAR_GZ_URL
+ARG JDK_TAR_GZ_IN_TMP=/tmp/jdk.tar.gz
+RUN apt-get -y install curl
+RUN curl -L -o ${JDK_TAR_GZ_IN_TMP} ${JDK_TAR_GZ_URL} && \
+tar -xzf ${JDK_TAR_GZ_IN_TMP} -C ${JAVA_HOME}/ --strip-components=1 && \
+find "${JAVA_HOME}" -type f -name '*.debuginfo' -exec rm {} \; && \
+find "${JAVA_HOME}" -type f -name '*.diz' -exec rm {} \; && \
+rm -rf ${JAVA_HOME}/demo/ ${JAVA_HOME}/lib/src.zip ${JAVA_HOME}/man/ && \
+java -version
+
+FROM java
+COPY --from=downloader ${JAVA_HOME}/ ${JAVA_HOME}/

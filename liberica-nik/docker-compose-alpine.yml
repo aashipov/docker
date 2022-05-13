@@ -1,0 +1,16 @@
+version: '3'
+
+# https://stackoverflow.com/a/53418591
+# docker-compose -f docker-compose-alpine.yml build --pull
+# docker-compose -f docker-compose-alpine.yml push
+
+services:
+  liberica-nik-alpine:
+    container_name: ${LIBERICA_NIK}-${ALPINE}
+    hostname: ${LIBERICA_NIK}-${ALPINE}
+    build:
+      context: .
+      dockerfile: Dockerfile.${ALPINE}
+      args:
+        JDK_TAR_GZ_URL: ${LIBERICA_NIK_ALPINE_TAR_GZ}
+    image: ${LIBERICA_NIK_ALPINE_IMAGE}

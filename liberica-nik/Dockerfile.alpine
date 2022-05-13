@@ -1,0 +1,23 @@
+FROM alpine:3.12 AS dummy
+ARG DUMMY_USER=dummy
+ARG UID_GID=10001
+RUN addgroup -g ${UID_GID} ${DUMMY_USER} && adduser -u ${UID_GID} -h /${DUMMY_USER}/ -G ${DUMMY_USER} -D ${DUMMY_USER} && apk add build-base zlib-dev
+
+FROM dummy AS java
+ENV JAVA_HOME=/opt/java
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+RUN mkdir -p ${JAVA_HOME}
+
+FROM java AS downloader
+ARG JDK_TAR_GZ_URL
+ARG JDK_TAR_GZ_IN_TMP=/tmp/jdk.tar.gz
+RUN apk add curl && \
+curl -L -o ${JDK_TAR_GZ_IN_TMP} ${JDK_TAR_GZ_URL} && \
+tar -xzf ${JDK_TAR_GZ_IN_TMP} -C ${JAVA_HOME}/ --strip-components=1 && \
+find "${JAVA_HOME}" -type f -name '*.debuginfo' -exec rm {} \; && \
+find "${JAVA_HOME}" -type f -name '*.diz' -exec rm {} \; && \
+rm -rf ${JAVA_HOME}/demo/ ${JAVA_HOME}/lib/src.zip ${JAVA_HOME}/man/ && \
+java -version && file ${JAVA_HOME}/bin/java
+
+FROM java
+COPY --from=downloader ${JAVA_HOME}/ ${JAVA_HOME}/

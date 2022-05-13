@@ -1,0 +1,17 @@
+FROM opensuse/leap:15.2 AS dummy
+ARG DUMMY_USER=dummy
+ARG UID_GID=10001
+RUN zypper --non-interactive dup && \
+zypper --non-interactive install git curl gzip docker && \
+zypper --non-interactive clean && \
+groupadd -g ${UID_GID} ${DUMMY_USER} && useradd -m -u ${UID_GID} -d /${DUMMY_USER}/ -g ${DUMMY_USER} ${DUMMY_USER} && \
+usermod -aG docker ${DUMMY_USER}
+
+FROM dummy AS tool-setup
+ADD tool-setup.bash /tmp/
+ADD tools.dsv /tmp/
+RUN /tmp/tool-setup.bash
+
+FROM dummy
+COPY --from=tool-setup /opt/ /opt/
+COPY --from=tool-setup /usr/bin/docker-compose /usr/bin/docker-compose

@@ -1,0 +1,21 @@
+version: '3'
+
+# DISTRO=debian docker-compose build --pull
+# DISTRO=debian docker-compose push
+# DISTRO=debian docker-compose run --rm builder-${DISTRO}
+
+services:
+
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.${DISTRO}
+    image: aashipov/docker:builder-${DISTRO}
+    container_name: builder-${DISTRO}
+    hostname: builder-${DISTRO}
+    working_dir: /${DUMMY_USER}/
+    user: ${DUMMY_UID}:${DUMMY_UID}
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
