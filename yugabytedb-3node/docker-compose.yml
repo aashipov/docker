@@ -1,0 +1,94 @@
+# Set up:
+# sudo rm -rf ${HOME}/docker-volumes/yb/
+# mkdir -p ${HOME}/docker-volumes/yb/y{m,1,2,3}/
+# After all nodes started:
+# docker exec -it ym sh
+# ./bin/yugabyted configure data_placement --base_dir=/home/yugabyte/ym --fault_tolerance=region
+# ./bin/yugabyted status --base_dir=/home/yugabyte/ym
+# Verify:
+# docker exec -it y3 sh
+# ysqlsh -h y3 -d postgres
+# select * from user_subscription;
+
+networks:
+  yb3node:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.10
+
+services:
+  ym:
+    image: ${YUGABYTE_IMAGE}
+    hostname: ym
+    container_name: ym
+    restart: no
+    ports:
+      - "5432:5433" # YSQL (PostgreSQL-compatible) API port
+      - "7000:7000" # Master UI port
+      - "9000:9000" # TServer UI port
+      - "9042:9042" # YCQL (Cassandra-compatible) API port
+      - "15432:15433" # Admin UI port
+    volumes:
+      - ${HOME}/docker-volumes/yb/ym/:/home/yugabyte/ym:rw
+      - ./:/dump/:rw
+    command: [ "bin/yugabyted", "start", "--daemon=false", "--base_dir=/home/yugabyte/ym", "--advertise_address=10.10.10.4", "--cloud_location=ym.ym.ym" ]
+    env_file: .env
+    networks:
+      yb3node:
+        ipv4_address: 10.10.10.4
+
+  y1:
+    image: ${YUGABYTE_IMAGE}
+    hostname: y1
+    container_name: y1
+    restart: no
+    depends_on:
+      - ym
+    ports:
+      - "5433:5433" # YSQL (PostgreSQL-compatible) API port
+    volumes:
+      - ${HOME}/docker-volumes/yb/y1/:/home/yugabyte/y1:rw
+      - ./:/dump/:rw
+    command: [ "bin/yugabyted", "start", "--daemon=false", "--base_dir=/home/yugabyte/y1", "--join=10.10.10.4", "--advertise_address=10.10.10.1", "--cloud_location=y1.y1.y1" ]
+    env_file: .env
+    networks:
+      yb3node:
+        ipv4_address: 10.10.10.1
+
+  y2:
+    image: ${YUGABYTE_IMAGE}
+    hostname: y2
+    container_name: y2
+    restart: no
+    depends_on:
+      - ym
+    ports:
+      - "5434:5433" # YSQL (PostgreSQL-compatible) API port
+    volumes:
+      - ${HOME}/docker-volumes/yb/y2/:/home/yugabyte/y2:rw
+      - ./:/dump/:rw
+    command: [ "bin/yugabyted", "start", "--daemon=false", "--base_dir=/home/yugabyte/y2", "--join=10.10.10.4", "--advertise_address=10.10.10.2", "--cloud_location=y2.y2.y2" ]
+    env_file: .env
+    networks:
+      yb3node:
+        ipv4_address: 10.10.10.2
+
+  y3:
+    image: ${YUGABYTE_IMAGE}
+    hostname: y3
+    container_name: y3
+    restart: no
+    depends_on:
+      - ym
+    ports:
+      - "5435:5433" # YSQL (PostgreSQL-compatible) API port
+    volumes:
+      - ${HOME}/docker-volumes/yb/y3/:/home/yugabyte/y3:rw
+      - ./:/dump/:rw
+    command: [ "bin/yugabyted", "start", "--daemon=false", "--base_dir=/home/yugabyte/y3", "--join=10.10.10.4", "--advertise_address=10.10.10.3", "--cloud_location=y3.y3.y3" ]
+    env_file: .env
+    networks:
+      yb3node:
+        ipv4_address: 10.10.10.3
