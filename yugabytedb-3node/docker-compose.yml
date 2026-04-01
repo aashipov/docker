@@ -25,7 +25,7 @@ services:
     container_name: ym
     restart: no
     ports:
-      - "5432:5433" # YSQL (PostgreSQL-compatible) API port
+    #  - "5432:5433" # YSQL (PostgreSQL-compatible) API port: either this one or HAProxy one
       - "7000:7000" # Master UI port
       - "9000:9000" # TServer UI port
       - "9042:9042" # YCQL (Cassandra-compatible) API port
@@ -92,3 +92,21 @@ services:
     networks:
       yb3node:
         ipv4_address: 10.10.10.3
+  
+  haproxy:
+    image: haproxy:latest
+    hostname: haproxy
+    container_name: haproxy
+    restart: no
+    depends_on:
+      - y1
+      - y2
+      - y3
+    ports:
+      - 5432:5432
+    volumes:
+      - "./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+    networks:
+      yb3node:
+        ipv4_address: 10.10.10.5
+    
