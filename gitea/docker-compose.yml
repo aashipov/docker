@@ -1,0 +1,56 @@
+# sudo rm -rf ${HOME}/docker-volumes/gitea/
+# mkdir -p ${HOME}/docker-volumes/gitea/{data,config,runner/{data/,docker-data/}/}/
+# sudo chown -R 1000:1000 ${HOME}/docker-volumes/gitea/runner/
+# launch postgresql, run init.sql
+# docker-compose up -d
+# pick runner token from UI, save to GITEA_RUNNER_REGISTRATION_TOKEN, restart
+
+networks:
+  default:
+    name: ${GITEA}
+
+services:
+
+  gitea:
+    image: ${GITEA_IMAGE}
+    container_name: ${GITEA}
+    hostname: ${GITEA}
+    restart: no
+    user: ${DUMMY_UID}:${DUMMY_UID}
+    volumes:
+      - ${HOME}/docker-volumes/${GITEA}/data/:/var/lib/gitea/
+      - ${HOME}/docker-volumes/${GITEA}/config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8087:8087
+      - 2222:2222
+    env_file:
+      - '.env'
+    extra_hosts:
+      - 'postgres:172.17.0.1'
+    healthcheck:
+      test: [ 'CMD-SHELL', 'curl gitea:8087/api/healthz' ]
+      interval: 5s
+      timeout: 60s
+      retries: 100
+      start_period: 10s
+
+  runner:
+    image: ${GITEA_RUNNER_IMAGE}
+    container_name: ${GITEA_RUNNER_NAME}
+    hostname: ${GITEA_RUNNER_NAME}
+    restart: no
+    privileged: true
+    depends_on:
+      gitea:
+        condition: service_healthy
+    env_file:
+      - '.env'
+    environment:
+      - DOCKER_HOST=unix:///var/run/user/1000/docker.sock
+      - DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
+      - DOCKERD_ROOTLESS_ROOTLESSKIT_MTU=65520
+    volumes:
+      - ${HOME}/docker-volumes/gitea/runner/data/:/data/
+      - ${HOME}/docker-volumes/gitea/runner/docker-data/:/home/rootless/.local/share/docker/
