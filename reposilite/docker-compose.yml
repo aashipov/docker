@@ -1,0 +1,21 @@
+# mkdir -p ${HOME}/docker-volumes/reposilite
+
+networks:
+  default:
+    name: ${REPOSILITE}
+
+x-volumes: &reposilite-volumes
+  - ${HOME}/docker-volumes/${REPOSILITE}/:/${DUMMY_USER}/reposilite/:rw
+
+services:
+  reposilite:
+    build:
+      context: .
+      dockerfile: Dockerfile.centos7
+    container_name: ${NEXUS}
+    hostname: ${NEXUS}
+    restart: no
+    user: ${DUMMY_UID}:${DUMMY_GID}
+    volumes: *reposilite-volumes
+    ports:
+      - 8088:8088
