@@ -1,0 +1,21 @@
+# mkdir -p ${HOME}/docker-volumes/athens/
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+
+x-volumes: &athens-volumes
+  - ${HOME}/docker-volumes/${COMPOSE_PROJECT_NAME}/:/athens/:rw
+
+services:
+  athens:
+    image: gomods/athens:latest
+    container_name: ${COMPOSE_PROJECT_NAME}
+    hostname: ${COMPOSE_PROJECT_NAME}
+    restart: no
+    user: ${DUMMY_UID}:${DUMMY_GID}
+    volumes: *athens-volumes
+    env_file:
+      - .env
+    ports:
+      - 8089:3000

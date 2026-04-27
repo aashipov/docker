@@ -5,6 +5,6 @@ ARG DUMMY_GID=10001
 COPY --chown=${DUMMY_UID}:${DUMMY_GID} entrypoint.sh /entrypoint.sh
 EXPOSE 8088
 USER ${DUMMY_USER}
-WORKDIR /${DUMMY_USER}
+WORKDIR /${DUMMY_USER}/
 RUN curl -o /${DUMMY_USER}/reposilite.jar -L https://maven.reposilite.com/releases/com/reposilite/reposilite/3.5.28/reposilite-3.5.28-all.jar
 ENTRYPOINT [ "/entrypoint.sh" ]
