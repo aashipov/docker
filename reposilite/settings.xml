@@ -7,7 +7,7 @@
   <mirrors>
     <mirror>
       <id>reposilite</id>
-      <mirrorOf>*</mirrorOf>
+      <mirrorOf>central</mirrorOf>
       <url>http://nexus:8088/maven-central/</url>
     </mirror>
   </mirrors>

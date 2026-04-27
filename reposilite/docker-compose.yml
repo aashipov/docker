@@ -1,4 +1,4 @@
-# mkdir -p ${HOME}/docker-volumes/reposilite
+# mkdir -p ${HOME}/docker-volumes/reposilite/
 
 networks:
   default:
@@ -17,5 +17,9 @@ services:
     restart: no
     user: ${DUMMY_UID}:${DUMMY_GID}
     volumes: *reposilite-volumes
+    env_file:
+      - .env
+    extra_hosts:
+      - 'postgres:172.17.0.1'
     ports:
       - 8088:8088
