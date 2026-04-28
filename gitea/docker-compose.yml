@@ -41,16 +41,15 @@ services:
     container_name: ${GITEA_RUNNER_NAME}
     hostname: ${GITEA_RUNNER_NAME}
     restart: no
-    privileged: true
+    # find docker GID
+    # cat /etc/group | grep docker | cut -d ':' -f 3
+    user: ${DUMMY_UID}:973
     depends_on:
       gitea:
         condition: service_healthy
     env_file:
       - '.env'
-    environment:
-      - DOCKER_HOST=unix:///var/run/user/1000/docker.sock
-      - DOCKERD_ROOTLESS_ROOTLESSKIT_NET=slirp4netns
-      - DOCKERD_ROOTLESS_ROOTLESSKIT_MTU=65520
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/docker-volumes/gitea/runner/data/:/data/
       - ${HOME}/docker-volumes/gitea/runner/docker-data/:/home/rootless/.local/share/docker/

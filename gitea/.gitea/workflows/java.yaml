@@ -1,0 +1,19 @@
+name: java
+on: [push]
+
+jobs:
+  
+  build:
+    runs-on: linux
+    container: 
+      image: aashipov/docker:debian13-builder
+      options: "--add-host=nexus:172.17.0.1"  
+    steps:
+      - name: Clone
+        run: git clone https://anatoly_a_shipov@bitbucket.org/anatoly_a_shipov/effective-mobile-bankcards.git
+      - name: Create .m2/
+        run: mkdir -p ${HOME}/.m2/
+      - name: Copy settings.xml
+        run: curl -L -o ${HOME}/.m2/settings.xml https://raw.githubusercontent.com/aashipov/docker/refs/heads/master/reposilite/settings.xml
+      - name: Build
+        run: mvn -f ./effective-mobile-bankcards/pom.xml clean package

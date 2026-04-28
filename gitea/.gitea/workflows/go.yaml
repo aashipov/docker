@@ -1,0 +1,15 @@
+name: go
+on: [push]
+
+jobs:
+  
+  build:
+    runs-on: linux
+    container: 
+      image: aashipov/docker:debian13-builder
+      options: "--add-host=athens:172.17.0.1"  
+    steps:
+      - name: Clone
+        run: git clone https://anatoly_a_shipov@bitbucket.org/anatoly_a_shipov/effective-mobile-go.git
+      - name: Build
+        run: GOPROXY=http://athens:8089 ./effective-mobile-go/build.sh

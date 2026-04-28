@@ -1,0 +1,48 @@
+FROM debian:13 AS dummy
+# docker build . --file=images/Dockerfile.debian13 --target=dummy --tag=aashipov/docker:debian13-dummy && docker push aashipov/docker:debian13-dummy
+ARG DUMMY_USER=dummy
+ARG DUMMY_UID=10001
+ARG DUMMY_GID=10001
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+RUN apt-get update -y && apt-get upgrade -y && \
+    apt-get install -y curl libarchive-tools locales && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8 && \
+    apt-get clean -y && \
+    groupadd -g ${DUMMY_GID} ${DUMMY_USER} && useradd -m -u ${DUMMY_UID} -d /${DUMMY_USER}/ -g ${DUMMY_USER} ${DUMMY_USER}
+
+FROM aashipov/docker:debian13-dummy AS downloader
+ENV JAVA_HOME=/opt/jdk
+ENV M2_HOME=/opt/maven
+RUN curl -L -o /tmp/go.tar.gz https://go.dev/dl/go1.26.2.linux-amd64.tar.gz && \
+    bsdtar -xzf /tmp/go.tar.gz -C /opt/ && \
+    mkdir -p ${JAVA_HOME} ${M2_HOME} && \
+    curl -L -o /tmp/openjdk.tar.gz https://github.com/aashipov/openjdk-build/releases/download/1.0.0/jdk25u-linux-x86_64-jdk-25.0.3+9.tar.gz && \
+    bsdtar -xzf /tmp/openjdk.tar.gz -C ${JAVA_HOME}/ --strip-components=1 && \
+    curl -L -o /tmp/maven.tar.gz https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \
+    bsdtar -xzf /tmp/maven.tar.gz -C ${M2_HOME}/ --strip-components=1
+
+FROM aashipov/docker:debian13-dummy AS builderbase
+ARG DUMMY_USER=dummy
+RUN apt-get install -y ca-certificates && install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update -y
+RUN apt-get install -y git docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && \
+    usermod -aG docker ${DUMMY_USER}
+
+FROM builderbase AS builder
+# docker build . --file=images/Dockerfile.debian13 --target=builder --tag=aashipov/docker:debian13-builder && docker push aashipov/docker:debian13-builder
+ARG DUMMY_USER=dummy
+ENV GOROOT=/opt/go
+ENV GOPATH=/${DUMMY_USER}/go
+ENV JAVA_HOME=/opt/jdk
+ENV M2_HOME=/opt/maven
+ENV PATH=${GOROOT}/bin:${GOPATH}/bin:${JAVA_HOME}/bin:${M2_HOME}/bin:${PATH}
+COPY --from=downloader /opt/ /opt/
