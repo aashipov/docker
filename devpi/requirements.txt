@@ -1,0 +1,4 @@
+devpi-server==6.19.3
+devpi-web==5.0.2
+devpi-client==7.2.1
+setuptools==80.10.2

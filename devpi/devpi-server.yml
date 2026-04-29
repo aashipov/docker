@@ -1,0 +1,5 @@
+devpi-server:
+  serverdir: /dummy/devpiserver-serverdir/
+  secretfile: /dummy/devpi-server-secret
+  host: 0.0.0.0
+  port: 8090
