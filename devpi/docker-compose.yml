@@ -19,7 +19,7 @@ services:
       target: devpi
     container_name: ${COMPOSE_PROJECT_NAME}
     hostname: ${COMPOSE_PROJECT_NAME}
-    restart: unless-stopped # no 'elegant' way around but restart (a 2048M RAM 'rule of thumb' per-container <-> OOMs recovery)
+    restart: unless-stopped # no 'elegant' way around but a restart (a 2048M RAM 'rule of thumb' per-container <-> OOMs recovery)
     deploy:
       resources:
         limits:

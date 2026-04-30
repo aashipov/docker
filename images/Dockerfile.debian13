@@ -50,6 +50,6 @@ COPY --from=downloader /opt/ /opt/
 
 FROM aashipov/docker:debian13-dummy AS python
 # docker build . --file=images/Dockerfile.debian13 --target=python --tag=aashipov/docker:debian13-python && docker push aashipov/docker:debian13-python
-RUN apt install -y python3 python3-pip python3-venv && \
+RUN apt install -y git python3 python3-pip python3-venv && \
     apt-get clean -y && \
     ln -s /usr/bin/python3 /usr/bin/python

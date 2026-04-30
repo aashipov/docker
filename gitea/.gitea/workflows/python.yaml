@@ -1,0 +1,19 @@
+name: java
+on: [push]
+
+jobs:
+  
+  build:
+    runs-on: linux
+    container: 
+      image: aashipov/docker:debian13-python
+      options: "--add-host=devpi:172.17.0.1"  
+    steps:
+      - name: Clone
+        run: git clone https://anatoly_a_shipov@bitbucket.org/anatoly_a_shipov/pytorch-fashionmnist-sandbox.git
+      - name: pip.conf
+        run: mkdir -p ${HOME}/.config/pip/ && curl -L -o ${HOME}/.config/pip/pip.conf https://raw.githubusercontent.com/aashipov/docker/refs/heads/master/devpi/pip.conf
+      - name: Build
+        run: ./pytorch-fashionmnist-sandbox/build.sh
+      - name: Run
+        run: ./pytorch-fashionmnist-sandbox/run.sh
