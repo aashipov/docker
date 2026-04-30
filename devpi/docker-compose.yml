@@ -19,11 +19,17 @@ services:
       target: devpi
     container_name: ${COMPOSE_PROJECT_NAME}
     hostname: ${COMPOSE_PROJECT_NAME}
-    restart: no
+    restart: unless-stopped # no 'elegant' way around but restart (a 2048M RAM 'rule of thumb' per-container <-> OOMs recovery)
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
     user: ${DUMMY_UID}:${DUMMY_GID}
     volumes: *devpi-volumes
     env_file:
       - .env
+    extra_hosts:
+      - 'postgres:172.17.0.1'
     ports:
       - 8090:8090
-    command: ${DUMMY_USER}/run.sh
+    command: /${DUMMY_USER}/run.sh

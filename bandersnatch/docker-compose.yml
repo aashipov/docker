@@ -23,4 +23,4 @@ services:
       - .env
     ports:
       - 8090:80
-    command: ${DUMMY_USER}/run.sh
+    command: /${DUMMY_USER}/run.sh

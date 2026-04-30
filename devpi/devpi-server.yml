@@ -3,3 +3,4 @@ devpi-server:
   secretfile: /dummy/devpi-server-secret
   host: 0.0.0.0
   port: 8090
+  storage: pg8000:host=postgres,port=5432,database=devpi,user=devpi,password=devpi

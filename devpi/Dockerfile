@@ -7,4 +7,8 @@ COPY --chown=${DUMMY_UID}:${DUMMY_GID} requirements.txt /${DUMMY_USER}/requireme
 USER ${DUMMY_USER}
 RUN /${DUMMY_USER}/build.sh
 
-FROM builder AS devpi
+FROM aashipov/docker:debian13-python AS devpi
+ARG DUMMY_USER=dummy
+ARG DUMMY_UID=10001
+ARG DUMMY_GID=10001
+COPY --from=builder --chown=${DUMMY_UID}:${DUMMY_GID} /${DUMMY_USER}/.venv/ /${DUMMY_USER}/.venv/
