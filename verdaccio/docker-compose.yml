@@ -1,0 +1,25 @@
+# mkdir -p ${HOME}/docker-volumes/verdaccio/{storage,conf,plugins}/
+# cp verdaccio/config.yaml ${HOME}/docker-volumes/verdaccio/conf/
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+
+x-volumes:
+  &verdaccio-volumes
+  - ${HOME}/docker-volumes/verdaccio/storage/:/verdaccio/storage/:rw
+  - ${HOME}/docker-volumes/verdaccio/conf/:/verdaccio/conf/:rw
+  - ${HOME}/docker-volumes/verdaccio/plugins/:/verdaccio/plugins/:rw
+
+services:
+  verdaccio:
+    image: ${VERDACCIO_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}
+    hostname: ${COMPOSE_PROJECT_NAME}
+    restart: no
+    user: ${DUMMY_UID}:${DUMMY_GID}
+    env_file:
+      - .env
+    ports:
+      - 8091:8091
+    volumes: *verdaccio-volumes
