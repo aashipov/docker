@@ -17,13 +17,17 @@ RUN apt-get update -y && apt-get upgrade -y && \
 FROM aashipov/docker:debian13-dummy AS downloader
 ENV JAVA_HOME=/opt/jdk
 ENV M2_HOME=/opt/maven
+ENV NODE_HOME=/opt/nodejs
 RUN curl -L -o /tmp/go.tar.gz https://go.dev/dl/go1.26.2.linux-amd64.tar.gz && \
     bsdtar -xzf /tmp/go.tar.gz -C /opt/ && \
-    mkdir -p ${JAVA_HOME} ${M2_HOME} && \
-    curl -L -o /tmp/openjdk.tar.gz https://github.com/aashipov/openjdk-build/releases/download/1.0.0/jdk25u-linux-x86_64-jdk-25.0.3+9.tar.gz && \
-    bsdtar -xzf /tmp/openjdk.tar.gz -C ${JAVA_HOME}/ --strip-components=1 && \
-    curl -L -o /tmp/maven.tar.gz https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \
+    mkdir -p ${JAVA_HOME} ${M2_HOME}
+RUN curl -L -o /tmp/openjdk.tar.gz https://github.com/aashipov/openjdk-build/releases/download/1.0.0/jdk25u-linux-x86_64-jdk-25.0.3+9.tar.gz && \
+    bsdtar -xzf /tmp/openjdk.tar.gz -C ${JAVA_HOME}/ --strip-components=1
+RUN curl -L -o /tmp/maven.tar.gz https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \
     bsdtar -xzf /tmp/maven.tar.gz -C ${M2_HOME}/ --strip-components=1
+RUN curl -L -o /tmp/nodejs.tar.gz https://nodejs.org/download/release/latest-jod/node-v22.22.2-linux-x64.tar.gz && \
+    mkdir -p ${NODE_HOME} && \
+    bsdtar -xzf /tmp/nodejs.tar.gz -C ${NODE_HOME} --strip-components=1
 
 FROM aashipov/docker:debian13-dummy AS builderbase
 ARG DUMMY_USER=dummy
@@ -45,7 +49,8 @@ ENV GOROOT=/opt/go
 ENV GOPATH=/${DUMMY_USER}/go
 ENV JAVA_HOME=/opt/jdk
 ENV M2_HOME=/opt/maven
-ENV PATH=${GOROOT}/bin:${GOPATH}/bin:${JAVA_HOME}/bin:${M2_HOME}/bin:${PATH}
+ENV NODE_HOME=/opt/nodejs
+ENV PATH=${GOROOT}/bin:${GOPATH}/bin:${JAVA_HOME}/bin:${M2_HOME}/bin:${NODE_HOME}/bin:${PATH}
 COPY --from=downloader /opt/ /opt/
 
 FROM aashipov/docker:debian13-dummy AS python
@@ -53,3 +58,9 @@ FROM aashipov/docker:debian13-dummy AS python
 RUN apt install -y git python3 python3-pip python3-venv && \
     apt-get clean -y && \
     ln -s /usr/bin/python3 /usr/bin/python
+
+FROM aashipov/docker:debian13-dummy AS nodejs
+# docker build . --file=images/Dockerfile.debian13 --target=nodejs --tag=aashipov/docker:debian13-nodejs && docker push aashipov/docker:debian13-nodejs
+ENV NODE_HOME=/opt/nodejs
+ENV PATH=${NODE_HOME}/bin:${PATH}
+COPY --from=downloader /opt/nodejs/ /opt/nodejs/
