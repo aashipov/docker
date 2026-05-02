@@ -1,0 +1,15 @@
+name: node
+on: [push]
+
+jobs:
+  
+  build:
+    runs-on: linux
+    container: 
+      image: aashipov/docker:debian13-builder
+      options: "--add-host=verdaccio:172.17.0.1"  
+    steps:
+      - name: Clone
+        run: git clone https://github.com/rcruzper/express-actuator.git
+      - name: Install
+        run: npm install --registry http://verdaccio:8091 --prefix ./express-actuator/
