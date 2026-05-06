@@ -1,0 +1,28 @@
+# mkdir -p ${HOME}/docker-volumes/localai/{backends,configuration,data,models}/
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+
+x-volumes: &localai-volumes
+  - ${HOME}/docker-volumes/localai/backends/:/backends/:rw
+  - ${HOME}/docker-volumes/localai/configuration/:/configuration/:rw
+  - ${HOME}/docker-volumes/localai/data/:/data/:rw
+  - ${HOME}/docker-volumes/localai/models/:/models/:rw
+
+services:
+  localai:
+    image: ${LOCALAI_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}
+    hostname: ${COMPOSE_PROJECT_NAME}
+    user: ${DUMMY_UID}:${DUMMY_UID}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/readyz"]
+      interval: 1m
+      timeout: 20m
+      retries: 5
+    ports:
+      - 8080:8080
+    environment:
+      - DEBUG=false
+    volumes: *localai-volumes
