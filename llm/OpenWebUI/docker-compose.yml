@@ -1,0 +1,22 @@
+# sudo rm -rf ${HOME}/docker-volumes/open-webui/
+# mkdir -p ${HOME}/docker-volumes/open-webui/data/
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+
+x-volumes:
+  &open-webui-volumes
+  - ${HOME}/docker-volumes/open-webui/data/:/app/backend/data
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "11435:8080"
+    volumes: *open-webui-volumes
+    environment:
+      - OPENAI_API_BASE_URL=http://172.17.0.1:11434/v1
+      - OPENAI_API_KEY=none
+    restart: no
