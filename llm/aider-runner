@@ -1,0 +1,23 @@
+#!/bin/sh
+
+enter_venv() {
+    local AIDER_VENV_DIR="${HOME}/.aider-venv"
+    if [ ! -d ${AIDER_VENV_DIR} ]
+    then
+        python3 -m venv ${AIDER_VENV_DIR}
+        . ${AIDER_VENV_DIR}/bin/activate
+        python3 -m pip install aider-install
+        aider-install
+    else
+        . ${AIDER_VENV_DIR}/bin/activate
+    fi
+}
+
+closure() {
+    enter_venv
+    # openai/Qwen/Qwen3-4B-GGUF:Q4_K_M
+    # openai/google/gemma-4-12B-it-qat-q4_0-gguf:Q4_0
+    aider --model openai/google/gemma-4-12B-it-qat-q4_0-gguf:Q4_0 --openai-api-base http://0.0.0.0:11434/v1 --openai-api-key a --max-chat-history-tokens 24576 --edit-format whole
+}
+
+closure
