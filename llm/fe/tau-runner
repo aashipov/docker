@@ -1,0 +1,48 @@
+#!/bin/sh
+
+enter_venv() {
+    if [ ! -d ${VENV_DIR} ]
+    then
+        python3 -m venv ${VENV_DIR}
+        . ${VENV_DIR}/bin/activate
+        python3 -m pip install "${PACKAGE_NAME}"
+    else
+        . ${VENV_DIR}/bin/activate
+    fi
+}
+
+build_catalog_toml() {
+    if [ ! -d "${HOME}/.${EXECUTABLE}" ]
+    then
+        mkdir -p "${HOME}/.${EXECUTABLE}"
+cat << 'EOF' | tee "${HOME}/.${EXECUTABLE}/catalog.toml"
+schema_version = 1
+
+[[providers]]
+name = "local"
+display_name = "local"
+kind = "openai-compatible"
+base_url = "http://0.0.0.0:11434/v1"
+docs_url = "https://www.dummy.org/local"
+credential_name = "local"
+api_key_env = "LOCAL_API_KEY"
+models = ["Qwen/Qwen3-4B-GGUF:Q4_K_M", "Qwen/Qwen3-8B-GGUF:Q4_K_M", "google/gemma-4-12B-it-qat-q4_0-gguf:Q4_0", "google/gemma-4-E2B-it-qat-q4_0-gguf:IT", "google/gemma-4-E4B-it-qat-q4_0-gguf:IT", "ibm-granite/granite-4.2-3b-GGUF:Q4_0", "mistralai/Ministral-3-3B-Instruct-2512-GGUF:Q4_K_M", "mistralai/Ministral-3-8B-Instruct-2512-GGUF:Q4_K_M", "unsloth/Llama-3.2-3B-Instruct-GGUF:Q4_0", "unsloth/gpt-oss-20b-GGUF:Q4_0", "unsloth/phi-4-GGUF:Q4_K_M"]
+default_model = "google/gemma-4-E2B-it-qat-q4_0-gguf:IT"
+EOF
+    fi
+}
+
+closure() {
+    #set -x
+    # https://github.com/huggingface/tau
+    local PACKAGE_NAME=tau-ai
+    local EXECUTABLE=tau
+    local VENV_DIR="${HOME}/.${EXECUTABLE}-venv"
+    enter_venv
+    build_catalog_toml
+
+    export LOCAL_API_KEY=none
+    ${EXECUTABLE} --provider local
+}
+
+closure
