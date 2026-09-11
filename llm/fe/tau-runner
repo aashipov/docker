@@ -32,6 +32,10 @@ EOF
     fi
 }
 
+tau_update() {
+    ${EXECUTABLE} update
+}
+
 closure() {
     #set -x
     # https://github.com/huggingface/tau
@@ -40,7 +44,8 @@ closure() {
     local VENV_DIR="${HOME}/.${EXECUTABLE}-venv"
     enter_venv
     build_catalog_toml
-
+    #tau_update
+    
     export LOCAL_API_KEY=none
     ${EXECUTABLE} --provider local
 }
