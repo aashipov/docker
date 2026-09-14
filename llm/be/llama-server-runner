@@ -2,8 +2,15 @@
 
 closure() {
     local THREAD_CNT=6
-    local CMD_LINE="llama-server --threads ${THREAD_CNT} --offline --host 0.0.0.0 --port 11434 --jinja --no-warmup --flash-attn on --context-shift --batch-size 512 --ubatch-size 512 --ctx-size 24576 --n-gpu-layers 0 --no-kv-offload --no-op-offload --no-mmproj-offload --no-mmap"
-    eval ${CMD_LINE}
+    local BATCH_SIZE=128
+    local CTX_SIZE=24576
+    local N_GPU_LAYERS=0
+
+    export GGML_VK_DISABLE_COOPMAT=1
+    export GGML_VK_DISABLE_COOPMAT2=1
+    local CMD_LINE="llama-server --threads ${THREAD_CNT} --offline --host 0.0.0.0 --port 11434 --jinja --no-warmup --flash-attn off --context-shift --batch-size ${BATCH_SIZE} --ubatch-size ${BATCH_SIZE} --ctx-size ${CTX_SIZE} --n-gpu-layers ${N_GPU_LAYERS} --load-mode mmap"
+
+    ${CMD_LINE}
 }
 
 closure
